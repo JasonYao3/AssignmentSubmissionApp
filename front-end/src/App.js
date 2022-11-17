@@ -1,40 +1,54 @@
-import { useEffect, useState } from 'react';
-import './App.css';
-import {useLocalState} from "./util/useLocalStorage";
+import { useEffect } from "react";
+import { Route } from "react-router";
+import { Routes } from "react-router-dom";
+import "./App.css";
+import Dashboard from "./Dashboard";
+import Homepage from "./Homepage";
+import Login from "./Login";
+import PrivateRoute from "./PrivateRoute";
+import { useLocalState } from "./util/useLocalStorage";
 
 function App() {
   const [jwt, setJwt] = useLocalState("", "jwt");
 
-  useEffect(() => {
-    if (!jwt) {
-      const reqBody = {
-        username: "jason",
-        password: "asdasd",
-      };
-    
-      fetch('api/auth/login', {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method : "post",
-        body: JSON.stringify(reqBody),
-      })
-      .then((response) => Promise.all([response.json(), response.headers]))
-      .then(([body, headers]) => {
-        setJwt(headers.get("authorization"));
-      });
-    }
-  }, [jwt]);
+  // useEffect(() => {
+  //   if (!jwt) {
+  //     const reqBody = {
+  //       username: "jason",
+  //       password: "asdasd",
+  //     };
+
+  //     fetch("api/auth/login", {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       method: "post",
+  //       body: JSON.stringify(reqBody),
+  //     })
+  //       .then((response) => Promise.all([response.json(), response.headers]))
+  //       .then(([body, headers]) => {
+  //         setJwt(headers.get("authorization"));
+  //       });
+  //   }
+  // }, [jwt]);
 
   useEffect(() => {
     console.log(`we have the JWT: ${jwt}`);
-  }, [jwt])
-  
+  }, [jwt]);
+
   return (
-    <div className="App">
-      <h1>Hello world</h1>
-      <div>JWT Value is {jwt}</div>
-    </div>
+    <Routes>
+      <Route
+        path="/dashboard"
+        element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Homepage />} />
+    </Routes>
   );
 }
 
