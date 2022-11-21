@@ -1,5 +1,6 @@
 package com.jasonycode.AssignmentSubmissionApp.web;
 
+import com.jasonycode.AssignmentSubmissionApp.dto.AssignmentResponseDto;
 import com.jasonycode.AssignmentSubmissionApp.entity.Assignment;
 import com.jasonycode.AssignmentSubmissionApp.entity.User;
 import com.jasonycode.AssignmentSubmissionApp.service.AssignmentService;
@@ -34,7 +35,9 @@ public class AssignmentController {
     @GetMapping("{assignmentId}")
     public ResponseEntity<?> getAssignment(@PathVariable Long assignmentId, @AuthenticationPrincipal User user) {
         Optional<Assignment> assignmentOpt = assignmentService.findById(assignmentId);
-        return ResponseEntity.ok(assignmentOpt.orElse(new Assignment()));
+
+        AssignmentResponseDto response = new AssignmentResponseDto(assignmentOpt.orElse(new Assignment()));
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("{assignmentId}")
