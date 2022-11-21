@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Route } from "react-router";
 import { Routes } from "react-router-dom";
 import "./App.css";
+import AssignmentView from "./AssignmentView";
 import Dashboard from "./Dashboard";
 import Homepage from "./Homepage";
 import Login from "./Login";
@@ -41,9 +42,17 @@ function App() {
       <Route
         path="/dashboard"
         element={
-          <PrivateRoute>
-            <Dashboard />
-          </PrivateRoute>
+          // <PrivateRoute>
+          <Dashboard />
+          //    </PrivateRoute>
+        }
+      />
+      <Route
+        path="/assignments/:id"
+        element={
+          //<PrivateRoute>
+          <AssignmentView />
+          // </PrivateRoute>
         }
       />
       <Route path="/login" element={<Login />} />
