@@ -12,7 +12,7 @@ const Dashboard = () => {
     ajax("api/assignments", "GET", jwt).then((assignmentsData) => {
       setAssignments(assignmentsData);
     });
-  }, []);
+  }, [jwt]);
 
   function createAssignment() {
     ajax("api/assignments", "POST", jwt).then((assignment) => {
@@ -21,7 +21,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div stype={{ margin: "2em" }}>
+    <div style={{ margin: "2em" }}>
       {assignments ? (
         assignments.map((assignment) => (
           <div key={assignment.id}>
