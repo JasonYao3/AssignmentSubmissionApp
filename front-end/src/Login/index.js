@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Button, Col, Container, Row, Form } from "react-bootstrap";
-import ajax from "../Services/fetchService";
 import { useLocalState } from "../util/useLocalStorage";
 
 const Login = () => {
@@ -19,7 +18,7 @@ const Login = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      method: "POST",
+      method: "post",
       body: JSON.stringify(reqBody),
     })
       .then((response) => {
@@ -28,7 +27,7 @@ const Login = () => {
         else return Promise.reject("Invalid login attempt");
       })
       .then(([body, headers]) => {
-        setJwt(headers.get("authorization"));
+        setJwt(String(headers.get("authorization")));
       })
       .catch((message) => {
         alert(message);
@@ -36,7 +35,7 @@ const Login = () => {
   }
   return (
     <>
-      <Container className="mt-3">
+      <Container className="mt-5 ">
         <Row className="justify-content-center">
           <Col md="8" lg="6">
             <Form.Group className="mb-3" controlId="username">
@@ -44,7 +43,7 @@ const Login = () => {
               <Form.Control
                 type="email"
                 size="lg"
-                placeholder="j@y.com"
+                placeholder="jy@jy.com"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -58,7 +57,7 @@ const Login = () => {
               <Form.Control
                 type="password"
                 size="lg"
-                placeholder="Enter your Password"
+                placeholder="Type in your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -69,7 +68,7 @@ const Login = () => {
           <Col
             md="8"
             lg="6"
-            className="mt-3 d-flex flex-column gap-4 flex-md-row justify-content-md-between"
+            className="mt-2 d-flex flex-column gap-5 flex-md-row justify-content-md-between"
           >
             <Button
               id="submit"
