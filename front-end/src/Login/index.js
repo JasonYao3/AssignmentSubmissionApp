@@ -19,7 +19,7 @@ const Login = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      method: "post",
+      method: "POST",
       body: JSON.stringify(reqBody),
     })
       .then((response) => {
@@ -29,7 +29,6 @@ const Login = () => {
       })
       .then(([body, headers]) => {
         setJwt(headers.get("authorization"));
-        username.setJwt(headers.get("dashboard"));
       })
       .catch((message) => {
         alert(message);

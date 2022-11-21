@@ -43,9 +43,9 @@ function App() {
       <Route
         path="/dashboard"
         element={
-          // <PrivateRoute>
-          <Dashboard />
-          //    </PrivateRoute>
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
         }
       />
       <Route
@@ -56,7 +56,7 @@ function App() {
           // </PrivateRoute>
         }
       />
-      <Route path="/login" element={<Login />} />
+      <Route path="login" element={<Login />} />
       <Route path="/" element={<Homepage />} />
     </Routes>
   );
