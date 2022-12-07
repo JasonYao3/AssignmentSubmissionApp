@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Button, Col, Container, Row, Form } from "react-bootstrap";
 import { useLocalState } from "../util/useLocalStorage";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -83,7 +85,7 @@ const Login = () => {
               type="button"
               size="lg"
               onClick={() => {
-                window.location.href = "/";
+                navigate("/");
               }}
             >
               Exit
