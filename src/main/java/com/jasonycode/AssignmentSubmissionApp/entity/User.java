@@ -77,7 +77,9 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> roles = new ArrayList<>();
-        roles.add(new Authority("ROLE_STUDENT"));
+        // roles.add(new Authority("ROLE_STUDENT"));
+        roles.add(new Authority("ROLE_CODE_REVIEWER")); // change this to code reviewer
+
         return roles;
     }
 
