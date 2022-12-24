@@ -24,6 +24,7 @@ public class User implements UserDetails {
     @OneToMany(fetch = FetchType.EAGER ,mappedBy = "user")
     @JsonIgnore
     private List<Authority> authorities = new ArrayList<>();
+    private String name;
 
     public Long getId() {
         return id;
@@ -77,8 +78,8 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> roles = new ArrayList<>();
-        // roles.add(new Authority("ROLE_STUDENT"));
-        roles.add(new Authority("ROLE_CODE_REVIEWER")); // change this to code reviewer
+        roles.add(new Authority("ROLE_STUDENT"));
+        //roles.add(new Authority("ROLE_CODE_REVIEWER")); // change this to code reviewer
 
         return roles;
     }
@@ -93,5 +94,11 @@ public class User implements UserDetails {
         this.password = password;
     }
 
+    public String getName() {
+        return name;
+    }
 
+    public void setName(String name) {
+        this.name = name;
+    }
 }

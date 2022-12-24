@@ -7,26 +7,30 @@ import ajax from "../Services/fetchService";
 import { Badge, Button, Card, Col, Container, Row } from "react-bootstrap";
 import StatusBadge from "../StatusBadge";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../UserProvider";
 
 const CodeReviewerDashboard = () => {
   const navigate = useNavigate();
-  const [jwt, setJwt] = useLocalState("", "jwt");
+  const user = useUser();
   const [assignments, setAssignments] = useState(null);
 
+  useEffect(() => {
+    if (!user.jwt) navigate("/login");
+  });
+
   function editReview(assignment) {
-    navigate(`/assignments/${assignment.id}`);
+    window.location.href = `/assignments/${assignment.id}`;
   }
 
   function claimAssignment(assignment) {
-    const decodedJwt = jwt_decode(jwt);
+    const decodedJwt = jwt_decode(user.jwt);
     const user = {
       username: decodedJwt.sub,
     };
 
     assignment.codeReviewer = user;
-    // TODO: don't hardcode this status
     assignment.status = "In Review";
-    ajax(`api/assignments/${assignment.id}`, "PUT", jwt, assignment).then(
+    ajax(`api/assignments/${assignment.id}`, "PUT", user.jwt, assignment).then(
       (updatedAssignment) => {
         // TODO: update the view for the assignment that changed
         const assignmentsCopy = [...assignments];
@@ -38,13 +42,13 @@ const CodeReviewerDashboard = () => {
   }
 
   useEffect(() => {
-    ajax("api/assignments", "GET", jwt).then((assignmentsData) => {
+    ajax("api/assignments", "GET", user.jwt).then((assignmentsData) => {
       setAssignments(assignmentsData);
     });
-  }, [jwt]);
+  }, [user.jwt]);
 
   function createAssignment() {
-    ajax("api/assignments", "POST", jwt).then((assignment) => {
+    ajax("api/assignments", "POST", user.jwt).then((assignment) => {
       navigate(`/assignments/${assignment.id}`);
     });
   }
@@ -57,7 +61,7 @@ const CodeReviewerDashboard = () => {
             className="d-flex justify-content-end"
             style={{ cursor: "pointer" }}
             onClick={() => {
-              setJwt(null);
+              user.setJwt(null);
               navigate("/login");
             }}
           >
@@ -124,14 +128,25 @@ const CodeReviewerDashboard = () => {
       <div className="assignment-wrapper submitted">
         <div className="assignment-wrapper-title h3 px-2">Awaiting Review</div>
         {assignments &&
-        assignments.filter((assignment) => assignment.status === "Submitted")
-          .length > 0 ? (
+        assignments.filter(
+          (assignment) =>
+            assignment.status === "Submitted" ||
+            assignment.status === "Resubmitted"
+        ).length > 0 ? (
           <div
             className="d-grid gap-5"
             style={{ gridTemplateColumns: "repeat(auto-fit, 18rem)" }}
           >
             {assignments
-              .filter((assignment) => assignment.status === "Submitted")
+              .filter(
+                (assignment) =>
+                  assignment.status === "Submitted" ||
+                  assignment.status === "Resubmitted"
+              )
+              .sort((a, b) => {
+                if (a.status === "Resubmitted") return -1;
+                else return 1;
+              })
               .map((assignment) => (
                 <Card
                   key={assignment.id}
@@ -206,7 +221,7 @@ const CodeReviewerDashboard = () => {
                     <Button
                       variant="secondary"
                       onClick={() => {
-                        navigate(`/assignments/${assignment.id}`);
+                        window.location.href = `/assignments/${assignment.id}`;
                       }}
                     >
                       View

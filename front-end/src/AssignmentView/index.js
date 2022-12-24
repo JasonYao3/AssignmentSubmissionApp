@@ -14,23 +14,110 @@ import {
 import ajax from "../Services/fetchService";
 import StatusBadge from "../StatusBadge";
 import { useLocalState } from "../util/useLocalStorage";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useUser } from "../UserProvider";
+import Comment from "../Comment";
+import { useInterval } from "../util/useInterval";
+import dayjs from "dayjs";
 
 const AssignmentView = () => {
   let navigate = useNavigate();
-  const assignmentId = window.location.href.split("/assignments/")[1];
-  const [jwt, setJwt] = useLocalState("", "jwt");
+  const user = useUser();
+  const { assignmentId } = useParams();
+  // const assignmentId = window.location.href.split("/assignments/")[1];
   const [assignment, setAssignment] = useState({
     branch: "",
     githubUrl: "",
     number: null,
     status: null,
   });
+
+  const emptyComment = {
+    id: null,
+    text: "",
+    assignmentId: assignmentId != null ? parseInt(assignmentId) : null,
+    user: user.jwt,
+  };
   const [assignmentEnums, setAssignmentEnums] = useState([]);
   const [assignmentStatuses, setAssignmentStatuses] = useState([]);
 
+  const [comment, setComment] = useState(emptyComment);
+  const [comments, setComments] = useState([]);
+
   const prevAssignmentValue = useRef(assignment);
 
+  useInterval(() => {
+    updateCommentTimeDisplay();
+  }, 1000 * 61);
+  function updateCommentTimeDisplay() {
+    const commentsCopy = [...comments];
+    commentsCopy.forEach(
+      (comment) => (comment.createdDate = dayjs(comment.createdDate))
+    );
+    setComments(commentsCopy);
+  }
+
+  function handleEditComment(commentId) {
+    const i = comments.findIndex((comment) => comment.id === commentId);
+    console.log("Edit this comment", commentId);
+    const commentCopy = {
+      id: comments[i].id,
+      text: comments[i].text,
+      assignmentId: assignmentId != null ? parseInt(assignmentId) : null,
+      user: user.jwt,
+    };
+    setComment(commentCopy);
+  }
+  function handleDeleteComment(commentId) {
+    // TODO: send DELETE request to server
+    console.log("Delete this comment", commentId);
+    ajax(`/api/comments/${commentId}`, "delete", user.jwt).then((msg) => {
+      const commentsCopy = [comments];
+      const i = commentsCopy.findIndex((comment) => comment.id === commentId);
+      commentsCopy.splice(i, 1);
+      setComments(commentsCopy);
+    });
+  }
+  
+  function submitComment() {
+    if (comment.id) {
+      ajax(`/api/comments/${comment.id}`, "put", user.jwt, comment).then(
+        (d) => {
+          const commentsCopy = [...comments];
+          const i = commentsCopy.findIndex((comment) => comment.id === d.id);
+          commentsCopy[i] = d;
+
+          setComments(commentsCopy);
+          setComment(emptyComment);
+        }
+      );
+    } else {
+      ajax("/api/comments", "post", user.jwt, comment).then((d) => {
+        const commentsCopy = [...comments];
+        commentsCopy.push(d);
+
+        setComments(commentsCopy);
+        setComment(emptyComment);
+      });
+    }
+  }
+
+  useEffect(() => {
+    ajax(
+      `/api/comments?assignmentId=${assignmentId}`,
+      "get",
+      user.jwt,
+      null
+    ).then((commentsData) => {
+      setComments(commentsData);
+    });
+  }, []);
+
+  function updateComment(value) {
+    const commentCopy = { ...comment };
+    commentCopy.text = value;
+    setComment(commentCopy);
+  }
   function updateAssignment(prop, value) {
     const newAssignment = { ...assignment };
     newAssignment[prop] = value;
@@ -46,7 +133,7 @@ const AssignmentView = () => {
   }
 
   function persist() {
-    ajax(`/api/assignments/${assignmentId}`, "PUT", jwt, assignment).then(
+    ajax(`/api/assignments/${assignmentId}`, "PUT", user.jwt, assignment).then(
       (assignmentData) => {
         setAssignment(assignmentData);
       }
@@ -61,7 +148,7 @@ const AssignmentView = () => {
   }, [assignment]);
 
   useEffect(() => {
-    ajax(`/api/assignments/${assignmentId}`, "GET", jwt).then(
+    ajax(`/api/assignments/${assignmentId}`, "GET", user.jwt).then(
       (assignmentResponse) => {
         let assignmentData = assignmentResponse.assignment;
         if (assignmentData.branch === null) assignmentData.branch = "";
@@ -190,8 +277,8 @@ const AssignmentView = () => {
             </div>
           ) : (
             <div className="d-flex gap-5">
-              <Button size="lg" onClick={() => save("Submitted")}>
-                Re-Submit Assignment
+              <Button size="lg" onClick={() => save("Resubmitted")}>
+                Resubmit Assignment
               </Button>
               <Button
                 size="lg"
@@ -202,6 +289,25 @@ const AssignmentView = () => {
               </Button>
             </div>
           )}
+
+          <div className="mt-5">
+            <textarea
+              style={{ width: "100%", borderRadius: "0.25em" }}
+              onChange={(e) => updateComment(e.target.value)}
+              value={comment.text}
+            ></textarea>
+            <Button onClick={() => submitComment()}>Post Comment</Button>
+          </div>
+          <div className="mt-5">
+            {comments.map((comment) => (
+              <Comment
+                key={comment.id}
+                commentData={comment}
+                emitDeleteComment={handleDeleteComment}
+                emitEditComment={handleEditComment}
+              />
+            ))}
+          </div>
         </>
       ) : (
         <></>

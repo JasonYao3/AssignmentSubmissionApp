@@ -12,14 +12,20 @@ import { useLocalState } from "./util/useLocalStorage";
 import "bootstrap/dist/css/bootstrap.min.css";
 import jwt_decode from "jwt-decode";
 import CodeReviewerAssignmentView from "./CodeReviewAssignmentView";
+import { UserProvider, useUser } from "./UserProvider";
 
 function App() {
-  const [jwt, setJwt] = useLocalState("", "jwt");
-  const [roles, setRoles] = useState(getRolesFromJWT(jwt));
+  //const [jwt, setJwt] = useLocalState("", "jwt");
+  const [roles, setRoles] = useState([]);
+  const user = useUser();
+
+  useEffect(() => {
+    setRoles(getRolesFromJWT());
+  }, [user.jwt]);
 
   function getRolesFromJWT() {
-    if (jwt) {
-      const decodedJwt = jwt_decode(jwt);
+    if (user.jwt) {
+      const decodedJwt = jwt_decode(user.jwt);
       return decodedJwt.authorities;
     }
     return [];
@@ -42,7 +48,7 @@ function App() {
         }
       />
       <Route
-        path="/assignments/:id"
+        path="/assignments/:assignmentId"
         element={
           roles.find((role) => role === "ROLE_CODE_REVIEWER") ? (
             <PrivateRoute>

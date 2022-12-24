@@ -1,26 +1,28 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
 import { useLocalState } from "../util/useLocalStorage";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import ajax from "../Services/fetchService";
 import { Badge, Button, Card, Col, Row } from "react-bootstrap";
 import StatusBadge from "../StatusBadge";
-import { useNavigate } from "react-router-dom";
+import { useUser } from "../UserProvider";
 
 const Dashboard = () => {
-  const nagivate = useNavigate();
-  const [jwt, setJwt] = useLocalState("", "jwt");
+  const navigate = useNavigate();
+  const user = useUser();
   const [assignments, setAssignments] = useState(null);
 
   useEffect(() => {
-    ajax("api/assignments", "GET", jwt).then((assignmentsData) => {
+    ajax("api/assignments", "GET", user.jwt).then((assignmentsData) => {
       setAssignments(assignmentsData);
     });
-  }, [jwt]);
+    if (!user.jwt) navigate("/login");
+  }, [user.jwt]);
 
   function createAssignment() {
-    ajax("api/assignments", "POST", jwt).then((assignment) => {
-      nagivate(`/assignments/${assignment.id}`);
+    ajax("api/assignments", "POST", user.jwt).then((assignment) => {
+      navigate(`/assignments/${assignment.id}`);
+      // window.location.href = `/assignments/${assignment.id}`;
     });
   }
 
@@ -32,8 +34,7 @@ const Dashboard = () => {
             className="d-flex justify-content-end"
             style={{ cursor: "pointer" }}
             onClick={() => {
-              setJwt(null);
-              nagivate("/login");
+              user.setJwt(null);
             }}
           >
             Logout
@@ -77,7 +78,8 @@ const Dashboard = () => {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    Navigate(`/assignments/${assignment.id}`);
+                    navigate(`/assignments/${assignment.id}`);
+                    // window.location.href = `/assignments/${assignment.id}`;
                   }}
                 >
                   Edit
